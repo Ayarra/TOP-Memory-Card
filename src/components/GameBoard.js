@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 
 import CharacterCard from "./CharacterCard";
 
-export default function GameBoard({ updateScore, updateHighScore, loseGame }) {
+export default function GameBoard({
+  score,
+  scoreGoal,
+  handleScoreGoal,
+  updateScore,
+  updateHighScore,
+  loseGame,
+}) {
   // CHARACTERS STATE
   const [characters, setCharacters] = useState([]);
-  const [charactersID, setCharactersID] = useState(() => {
-    return generateCharactersArray();
-  });
 
-  function generateCharactersArray() {
+  function generateCharactersArray(scoreGoal) {
     let randomArr = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < scoreGoal; i++) {
       randomArr.push(Math.floor(Math.random() * 100) + 1);
     }
 
@@ -19,15 +23,23 @@ export default function GameBoard({ updateScore, updateHighScore, loseGame }) {
   }
 
   function handleClick(id) {
+    const newArray = [...characters];
+    // mini algo for shuffling
+    let shuffledCharacters = newArray
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+
+    // handling double click
     setCharacters(
-      characters.map((char) => {
+      shuffledCharacters.map((char) => {
         if (char.id === id && !char.clicked) {
           updateScore();
+          handleScoreGoal((prevGoal) => prevGoal + 1);
           updateHighScore();
 
           return { ...char, clicked: true };
         } else if (char.id === id && char.clicked) {
-          console.log("test");
           loseGame();
         }
         return char;
@@ -35,21 +47,42 @@ export default function GameBoard({ updateScore, updateHighScore, loseGame }) {
     );
   }
 
-  useEffect(() => {
-    fetch(`https://rickandmortyapi.com/api/character/${charactersID}`)
-      .then((results) => results.json())
-      .then((data) => {
-        const newSet = data.map((el) => ({
-          id: el.id,
-          name: el.name,
-          image: el.image,
-          clicked: false,
-        }));
-        setCharacters(newSet);
-      });
-  }, []);
+  async function fetchCharacters(scoreGoal) {
+    let randomArr = generateCharactersArray(scoreGoal);
+    const res = await fetch(
+      `https://rickandmortyapi.com/api/character/${randomArr}`
+    );
+    const fetchedCharacters = await res.json();
 
-  console.log(characters);
+    return fetchedCharacters;
+  }
+
+  async function cleanCharacters(scoreGoal) {
+    const characters = await fetchCharacters(scoreGoal);
+    const newSet = await characters.map((el) => ({
+      id: el.id,
+      name: el.name,
+      image: el.image,
+      clicked: false,
+    }));
+    return newSet;
+  }
+
+  const initializeCharacters = async (scoreGoal) => {
+    const randomCharacters = await cleanCharacters(scoreGoal);
+    setCharacters(await randomCharacters);
+  };
+
+  function levelUp(scoreGoal) {
+    initializeCharacters(scoreGoal);
+  }
+
+  if (!characters.length) {
+    initializeCharacters(scoreGoal + 4);
+  } else if (scoreGoal === characters.length) {
+    levelUp(scoreGoal + 4);
+    handleScoreGoal(0);
+  }
   return (
     <div className="gameboard">
       <p className="instructions">

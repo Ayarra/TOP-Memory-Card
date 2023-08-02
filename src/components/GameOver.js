@@ -1,8 +1,10 @@
 export default function GameOver({ setGameOver }) {
   return (
-    <div>
-      Game Over
-      <button onClick={() => setGameOver()}>Replay</button>
+    <div className="gameOver">
+      <p>Game Over</p>
+      <button className="replay" onClick={() => setGameOver()}>
+        Replay
+      </button>
     </div>
   );
 }

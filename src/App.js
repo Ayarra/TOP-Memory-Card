@@ -1,47 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import GameBoard from "./components/GameBoard";
 import GameOver from "./components/GameOver";
 import ScoreBoard from "./components/Scoreboard";
 
 import "./App.css";
-import {
-  useGameOver,
-  useScore,
-  useUpdateGameOver,
-} from "./Contexts/ScoreContext";
 
 function App() {
   // GLOBAL STATE
   const [score, setScore] = useState(0);
+  const [scoreGoal, setScoreGoal] = useState(0);
+
   const [highScore, setHighScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-
-  // context
-  // const score = useScore();
-  // const gameOver = useGameOver();
-  // const setGameOver = useUpdateGameOver();
-
-  // function shuffleCharacters(array) {
-  //   const newArray = [...array];
-  //   let shuffled = newArray
-  //     .map((value) => ({ value, sort: Math.random() }))
-  //     .sort((a, b) => a.sort - b.sort)
-  //     .map(({ value }) => value);
-
-  //   setCharacters(shuffled);
-  // }
+  const [counter, setCounter] = useState();
 
   function updateScore() {
     setScore((prevScore) => prevScore + 1);
   }
 
   function updateHighScore() {
-    setHighScore((prevHighScore) => prevHighScore + 1);
+    if (score < highScore);
+    else setHighScore((prevHigh) => prevHigh + 1);
   }
 
   function loseGame() {
+    if (score > highScore) setHighScore(score);
     setScore(0);
+    setScoreGoal(0);
     setGameOver(true);
   }
 
@@ -50,9 +36,13 @@ function App() {
       <ScoreBoard highScore={highScore} score={score} />
       {!gameOver && (
         <GameBoard
+          score={score}
           updateScore={updateScore}
+          scoreGoal={scoreGoal}
+          handleScoreGoal={setScoreGoal}
           updateHighScore={updateHighScore}
           loseGame={loseGame}
+          gameOver={gameOver}
         />
       )}
       {gameOver && <GameOver setGameOver={setGameOver} />}
