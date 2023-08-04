@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { generateCharactersArray } from "./helpers";
 
 import CharacterCard from "./CharacterCard";
 
 export default function GameBoard({
-  score,
   scoreGoal,
   handleScoreGoal,
   updateScore,
@@ -12,15 +12,6 @@ export default function GameBoard({
 }) {
   // CHARACTERS STATE
   const [characters, setCharacters] = useState([]);
-
-  function generateCharactersArray(scoreGoal) {
-    let randomArr = [];
-    for (let i = 0; i < scoreGoal; i++) {
-      randomArr.push(Math.floor(Math.random() * 100) + 1);
-    }
-
-    return randomArr;
-  }
 
   function handleClick(id) {
     const newArray = [...characters];
@@ -32,7 +23,7 @@ export default function GameBoard({
 
     // handling double click
     setCharacters(
-      shuffledCharacters.map((char) => {
+      characters.map((char) => {
         if (char.id === id && !char.clicked) {
           updateScore();
           handleScoreGoal((prevGoal) => prevGoal + 1);
@@ -47,42 +38,36 @@ export default function GameBoard({
     );
   }
 
-  async function fetchCharacters(scoreGoal) {
-    let randomArr = generateCharactersArray(scoreGoal);
-    const res = await fetch(
+  const initializeCharacters = async (scoreGoal) => {
+    const randomCharacters = await getCharacters(scoreGoal);
+    setCharacters(randomCharacters);
+  };
+
+  async function getCharacters(goal) {
+    let randomArr = generateCharactersArray(goal);
+    const response = await fetch(
       `https://rickandmortyapi.com/api/character/${randomArr}`
     );
-    const fetchedCharacters = await res.json();
-
-    return fetchedCharacters;
-  }
-
-  async function cleanCharacters(scoreGoal) {
-    const characters = await fetchCharacters(scoreGoal);
-    const newSet = await characters.map((el) => ({
+    const body = await response.json();
+    const results = body.map((el) => ({
       id: el.id,
       name: el.name,
       image: el.image,
       clicked: false,
     }));
-    return newSet;
+
+    return results;
   }
 
-  const initializeCharacters = async (scoreGoal) => {
-    const randomCharacters = await cleanCharacters(scoreGoal);
-    setCharacters(await randomCharacters);
-  };
+  useEffect(() => {
+    if (!characters.length) {
+      initializeCharacters(scoreGoal + 4);
+    } else if (scoreGoal === characters.length) {
+      initializeCharacters(scoreGoal + 4);
+      handleScoreGoal(0);
+    }
+  }, [characters, scoreGoal]);
 
-  function levelUp(scoreGoal) {
-    initializeCharacters(scoreGoal);
-  }
-
-  if (!characters.length) {
-    initializeCharacters(scoreGoal + 4);
-  } else if (scoreGoal === characters.length) {
-    levelUp(scoreGoal + 4);
-    handleScoreGoal(0);
-  }
   return (
     <div className="gameboard">
       <p className="instructions">

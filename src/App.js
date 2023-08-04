@@ -13,7 +13,6 @@ function App() {
 
   const [highScore, setHighScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [counter, setCounter] = useState();
 
   function updateScore() {
     setScore((prevScore) => prevScore + 1);

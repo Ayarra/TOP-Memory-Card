@@ -1,7 +1,4 @@
-// import { useScore } from "../Contexts/ScoreContext";
-
 export default function ScoreBoardDisplay({ highScore, score }) {
-  // const score = useScore();
   return (
     <div className="display">
       <div>
