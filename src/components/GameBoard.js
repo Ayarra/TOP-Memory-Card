@@ -23,7 +23,7 @@ export default function GameBoard({
 
     // handling double click
     setCharacters(
-      characters.map((char) => {
+      shuffledCharacters.map((char) => {
         if (char.id === id && !char.clicked) {
           updateScore();
           handleScoreGoal((prevGoal) => prevGoal + 1);
